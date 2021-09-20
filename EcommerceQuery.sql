@@ -46,7 +46,19 @@ Group by [Order Date], [Product Category]
 Order by [Product Category], [Order Date]
 
 
-Select State, City, Segment, [Product Category], Product, Sales, Quantity
-From PortfolioProject..Sales
-Where Country = 'United States'
-Order by State, City, Segment, [Product Category]
+Select ss.Country, ss.State, ss.City, ss.Segment, ss.[Product Category], ss.Product, 
+COUNT(ss.Product) as ProductsReturnedNum, SUM(ret.[Sales Amount]) as RefundAmount
+From PortfolioProject..Sales ss
+JOIN PortfolioProject..Returns ret
+	ON ss.[Order ID] = ret.[Order ID]
+Group by ss.Country, ss.State, ss.City, ss.Segment, ss.[Product Category], ss.Product
+Order by ProductsReturnedNum Desc
+
+
+Select (Select COUNT(Product) From PortfolioProject..Sales) as TotalQty,
+COUNT(ss.Product) as SOHQty, (Select COUNT(Product) From PortfolioProject..Sales)-COUNT(ss.Product)  as ActualQty,
+SUM(ret.[Sales Amount]) as RefundAmount, 
+SUM(ret.[Sales Amount])/(Select SUM(Sales) From PortfolioProject..Sales)*100 as RefundRatio
+From PortfolioProject..Sales ss
+JOIN PortfolioProject..Returns ret
+	ON ss.[Order ID] = ret.[Order ID]
